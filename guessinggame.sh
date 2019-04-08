@@ -1,29 +1,41 @@
 #!/usr/bin/env bash
 # File: guessinggame.sh
 
-dirarray=($(ls -d */))
-dircount=${#dirarray[@]}
-dirguess=0
+actual=$(ls -l | grep ^- | wc -l)
 
-function checkguess {
-    # Usage of an if statement
-    if [[ $1 -lt $2 ]]
+function isNumeric() {
+    if [[ ! $@ =~ ^[0-9]+$ ]]
     then
-    echo "echo Too low"
-    elif [[ $1 -gt $2 ]]
+        echo "'$@' is not a number. Try again..."
+        false
+    fi    
+}
+
+function isCorrect() {
+    if [[ $1 -eq $actual ]]
     then
-    echo "echo Too high"
+        echo "'$1' is correct! Congratulations!!!"
+    else
+        false
     fi
 }
 
-# Usage of a loop
-while [ $dirguess -ne $dircount ]
+function giveHint() {
+    if [[ $1 -lt $actual ]]
+    then
+        echo $"'$1' is too low! Try again..."
+    else
+        echo $"'$1' is too high! Try again..."
+    fi    
+}
+
+while true
 do
-echo "Guess the number of directories!"
-# Collecting user response
-read dirguess
+    echo ""
+    echo "How many files are in the current directory?"
+    read guess
 
-$(checkguess $dirguess $dircount)
-
+    ! isNumeric $guess && continue
+    isCorrect $guess && break
+    giveHint $guess
 done
-echo "You got it right!  Congrats!"
